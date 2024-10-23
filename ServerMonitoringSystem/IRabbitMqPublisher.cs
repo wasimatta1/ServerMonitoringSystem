@@ -1,4 +1,4 @@
-﻿namespace ServerMonitoringSystem
+﻿namespace Produser
 {
     internal interface IRabbitMqPublisher
     {

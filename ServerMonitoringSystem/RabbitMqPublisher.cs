@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.Json;
 
-namespace ServerMonitoringSystem
+namespace Produser
 {
     public class RabbitMqPublisher : IRabbitMqPublisher
     {
