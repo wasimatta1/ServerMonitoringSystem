@@ -28,6 +28,11 @@ namespace ServerMonitoringSystem
                 Console.WriteLine($"CPU Usage: {state.CpuUsage} %");
                 Console.WriteLine($"Timestamp: {state.Timestamp}");
 
+                IRabbitMqPublisher Publisher = new RabbitMqPublisher("localhost", "ServerStatistics");
+                string topic = $"ServerStatistics.{serverStatsConfig.ServerIdentifier}";
+                Publisher.Publish(topic, state);
+                Console.WriteLine($"Published to {topic}");
+
                 await Task.Delay(serverStatsConfig.SamplingIntervalSeconds * 1000);
             }
         }
