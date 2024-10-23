@@ -1,10 +1,10 @@
-﻿using Consumer.property;
+﻿using Consumer.MongoDB;
+using Consumer.property;
 using Microsoft.Extensions.Configuration;
-using System.Text.Json;
 
 namespace Consumer
 {
-    internal class Program
+    internal partial class Program
     {
         static void Main(string[] args)
         {
@@ -23,15 +23,50 @@ namespace Consumer
                 QueueName = config.GetSection("RabbitMq:QueueName").Value!.ToString()!
             };
 
+            var mongoDbConfig = new MongoDbConfig
+            {
+                ConnectionString = config.GetSection("MongoDb:ConnectionString").Value!.ToString(),
+                DatabaseName = config.GetSection("MongoDb:DatabaseName").Value!.ToString(),
+                CollectionName = config.GetSection("MongoDb:CollectionName").Value!.ToString()
+            };
+            var anomalyDetectionConfig = new AnomalyDetectionConfig
+            {
+                MemoryUsageAnomalyThresholdPercentage = double.Parse(config.GetSection("AnomalyDetectionConfig:MemoryUsageAnomalyThresholdPercentage").Value!),
+                CpuUsageAnomalyThresholdPercentage = double.Parse(config.GetSection("AnomalyDetectionConfig:CpuUsageAnomalyThresholdPercentage").Value!),
+                MemoryUsageThresholdPercentage = double.Parse(config.GetSection("AnomalyDetectionConfig:MemoryUsageThresholdPercentage").Value!),
+                CpuUsageThresholdPercentage = double.Parse(config.GetSection("AnomalyDetectionConfig:CpuUsageThresholdPercentage").Value!)
+            };
 
             //start consuming
             var consumer = new RabbitMqConsumer(rabbitConfig.HostName, rabbitConfig.QueueName);
 
             string topic = $"ServerStatistics.{serverStatsConfig.ServerIdentifier}";
 
+
+
+            ServerStatistics preStatistics = null;
+
             consumer.StartListening(topic, (statistics) =>
             {
-                Console.WriteLine($"Received: {JsonSerializer.Serialize(statistics)}");
+
+                IMongoDbService client = new MongoDbService(mongoDbConfig);
+
+
+                var anomalyDetector = new AnomalyDetector(anomalyDetectionConfig);
+
+                if (anomalyDetector.IsHighUsage(statistics))
+                {
+                    Console.WriteLine("High Usage Alert");
+                }
+                if (preStatistics != null && anomalyDetector.IsAnomalous(statistics, preStatistics))
+                {
+                    Console.WriteLine("Anomaly Detected");
+                }
+
+                client.InsertStatistics(statistics);
+                preStatistics = statistics;
+
+                Console.WriteLine($"Received: {statistics}");
             });
 
             Console.ReadKey();

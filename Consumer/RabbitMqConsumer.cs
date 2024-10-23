@@ -32,6 +32,7 @@ namespace Consumer
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
                 var statistics = JsonSerializer.Deserialize<ServerStatistics>(message);
+                statistics.ServerIdentifier = topic;
 
                 onMessageReceived?.Invoke(statistics);
             };
