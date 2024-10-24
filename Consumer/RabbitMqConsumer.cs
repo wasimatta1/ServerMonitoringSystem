@@ -40,6 +40,9 @@ namespace Consumer
             channel.BasicConsume(queue: topic, autoAck: true, consumer: consumer);
 
             Console.WriteLine("Consuming");
+
+            Console.ReadLine();
+
         }
     }
 }

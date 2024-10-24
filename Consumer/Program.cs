@@ -42,35 +42,40 @@ namespace Consumer
 
             string topic = $"ServerStatistics.{serverStatsConfig.ServerIdentifier}";
 
+            var urlaleart = config.GetSection("SignalRConfig:SignalRUrl").Value!.ToString();
 
+            var signalRAlertService = new SignalRAlertService(urlaleart);
 
-            ServerStatistics preStatistics = null;
+            ServerStatistics? preStatistics = null;
 
             consumer.StartListening(topic, (statistics) =>
             {
 
                 IMongoDbService client = new MongoDbService(mongoDbConfig);
 
-
                 var anomalyDetector = new AnomalyDetector(anomalyDetectionConfig);
 
                 if (anomalyDetector.IsHighUsage(statistics))
                 {
                     Console.WriteLine("High Usage Alert");
+                    signalRAlertService.SendAlert("High Usage Alert");
                 }
                 if (preStatistics != null && anomalyDetector.IsAnomalous(statistics, preStatistics))
                 {
                     Console.WriteLine("Anomaly Detected");
+                    signalRAlertService.SendAlert("Anomaly Detected");
                 }
 
                 client.InsertStatistics(statistics);
                 preStatistics = statistics;
 
                 Console.WriteLine($"Received: {statistics}");
+
             });
 
             Console.ReadKey();
         }
 
     }
+
 }
