@@ -19,32 +19,6 @@ This project implements a server monitoring and notification system using C# wit
 - MongoDB
 - C#
 
-## Project Structure
-
-```
-.
-├── ServerStatisticsCollector      # Contains the service that collects and publishes server statistics
-│   ├── Program.cs                 # Entry point for the statistics collection service
-│   ├── ServerStatistics.cs         # Class definition for server statistics
-│   └── appsettings.json            # Configuration for sampling intervals and server identifier
-│
-├── MessageProcessingService        # Contains the service for processing messages and detecting anomalies
-│   ├── Program.cs                 # Entry point for the message processing service
-│   ├── AnomalyDetector.cs          # Logic for detecting anomalies
-│   ├── MongoRepository.cs          # Abstraction for MongoDB interactions
-│   └── appsettings.json            # Configuration for anomaly detection thresholds
-│
-├── SignalRAlertService             # Contains the service for sending alerts via SignalR
-│   ├── Program.cs                 # Entry point for the SignalR alerting service
-│   ├── AlertHub.cs                # Definition of the SignalR hub
-│   └── appsettings.json            # Configuration for SignalR
-│
-├── SignalRClient                   # Contains the console client for receiving alerts
-│   └── Program.cs                 # Entry point for the SignalR client
-│
-└── README.md                      # Project documentation (this file)
-```
-
 ## Prerequisites
 
 To run this application, you will need:
