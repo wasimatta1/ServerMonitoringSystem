@@ -1,4 +1,4 @@
-﻿namespace ServerMonitoringSystem
+﻿namespace Produser
 {
     public class ServerStatistics
     {

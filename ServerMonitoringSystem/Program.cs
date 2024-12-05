@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Produser.property;
 using System.Diagnostics;
 
-namespace ServerMonitoringSystem
+namespace Produser
 {
     internal class Program
     {
@@ -18,6 +19,11 @@ namespace ServerMonitoringSystem
             };
 
             Console.WriteLine($"Sampling Interval: {serverStatsConfig.SamplingIntervalSeconds}, Server Identifier: {serverStatsConfig.ServerIdentifier}");
+            var rabbitConfig = new RabbitMqConfig
+            {
+                HostName = config.GetSection("RabbitMq:Hostname").Value!.ToString(),
+                QueueName = config.GetSection("RabbitMq:QueueName").Value!.ToString()!
+            };
 
             while (true)
             {
@@ -27,6 +33,11 @@ namespace ServerMonitoringSystem
                 Console.WriteLine($"Available Memory: {state.AvailableMemory} MB");
                 Console.WriteLine($"CPU Usage: {state.CpuUsage} %");
                 Console.WriteLine($"Timestamp: {state.Timestamp}");
+
+                IRabbitMqPublisher Publisher = new RabbitMqPublisher(rabbitConfig.HostName, rabbitConfig.QueueName);
+                string topic = $"ServerStatistics.{serverStatsConfig.ServerIdentifier}";
+                Publisher.Publish(topic, state);
+                Console.WriteLine($"Published to {topic}");
 
                 await Task.Delay(serverStatsConfig.SamplingIntervalSeconds * 1000);
             }
